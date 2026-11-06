@@ -103,12 +103,12 @@ M.forEach(m=>m.s=m.s||'Football');
 const COMPS=['Premier League','Champions League','LaLiga','Serie A','Bundesliga'];
 const PLAYERS=[['L. Vance','Arsenal'],['D. Okoro','Arsenal'],['M. Haller','Brighton'],['T. Brandt','Man City'],['R. Silva','Liverpool']];
 const MKTS=['Match result','Next goal','Both teams to score','Total goals','Asian handicap','Anytime goalscorer','Total corners','Total cards'];
-let rng='all',pref='ask',L={},lastU=Date.now(),P={},S=new Set(),slip=[],tab='slip',sub='open',res=null,cur='ars-bri',bal=1250,failNext=false,grp='Popular',sport='All',comp='All',route='home';
+let B={},rng='all',pref='ask',L={},lastU=Date.now(),P={},S=new Set(),slip=[],tab='slip',sub='open',res=null,cur='ars-bri',bal=1250,failNext=false,grp='Popular',sport='All',comp='All',route='home';
 let F=new Set(['Premier League','Arsenal']);
 let bets=[{l:'Liverpool',m:'Liverpool v Man United',mk:'Match result',st:25,o:1.65,s:'open',d:0,tm:'14:58'},{l:'Over 2.5',m:'Man City v Tottenham',mk:'Total goals 2.5',st:10,o:1.8,s:'open',d:0,tm:'13:20'},{l:'Barcelona',m:'Barcelona v Sevilla',mk:'Match result',st:20,o:1.45,s:'won',d:3,tm:'19:05'},{l:'Draw',m:'Milan v Napoli',mk:'Match result',st:15,o:3.2,s:'lost',d:12,tm:'16:40'},{l:'Over 2.5',m:'Dortmund v Leverkusen',mk:'Total goals 2.5',st:12,o:1.9,s:'void',d:20,tm:'12:10'}];
 const nm=(m,i)=>m.o.length==3?[m.h,'Draw',m.a][i]:[m.h,m.a][i];
 const key=(id,mk,sel)=>id+'|'+mk+'|'+sel;
-const odd=(m,mk,sel,p,lab)=>{const k=key(m.id,mk,sel);if(!(k in P))P[k]=p;return `<button class="o" data-k="${k}" data-l="${sel}" data-mk="${mk}" aria-label="${sel} ${mk}">${lab?`<small>${sel}</small>`:''}<b>${f(P[k])}</b></button>`};
+const odd=(m,mk,sel,p,lab)=>{const k=key(m.id,mk,sel);if(!(k in P)){P[k]=p;B[k]=p}return `<button class="o" data-k="${k}" data-l="${sel}" data-mk="${mk}" aria-label="${sel} ${mk}">${lab?`<small>${sel}</small>`:''}<b>${f(P[k])}</b></button>`};
 M.forEach((m,i)=>{if(!m.live)m.t0=Date.now()+(20+i*47)*6e4});const cd=m=>{const x=Math.max(0,Math.round((m.t0-Date.now())/6e4));return x<60?'in '+x+'m':'in '+Math.floor(x/60)+'h '+x%60+'m'};
 S.add('mci-tot|Match result');
 const fol=n=>F.has(n)?`<button class="badge" data-f="${n}">★ Following</button>`:`<button class="fl" data-f="${n}">☆ Follow</button>`;
@@ -187,7 +187,7 @@ document.addEventListener('input',e=>{const t=e.target;if(t.dataset.i!==undefine
 if(t.id=='ms'){const q=t.value.trim().toLowerCase();$$('.mk').forEach(e=>{e.style.display=(q?e.textContent.toLowerCase().includes(q):e.dataset.g==grp)?'':'none'})}if(t.id=='q'){const q=t.value.trim().toLowerCase(),r=[];if(q){new Set(M.flatMap(m=>[m.h,m.a])).forEach(n=>n.toLowerCase().includes(q)&&r.push(['Team',n,'t|'+M.find(m=>m.h==n||m.a==n).id]));COMPS.forEach(n=>n.toLowerCase().includes(q)&&r.push(['Competition',n,'c|x']));PLAYERS.forEach(p=>p[0].toLowerCase().includes(q)&&r.push(['Player',p[0]+' ('+p[1]+')','p|ars-bri']));MKTS.forEach(n=>n.toLowerCase().includes(q)&&r.push(['Market',n,'m|ars-bri']))}
 $('#hm').style.display=q?'none':'';$('#sr').innerHTML=q?(r.length?r.map(x=>`<div class="row" data-sr="${x[2]}" style="cursor:pointer"><span>${x[1]}</span><span class="sm">${x[0]}</span></div>`).join(''):'<div class="card">No results. Try a team, player, competition or market.</div>'):''}});
 const safe=()=>{if(document.activeElement&&['INPUT','SELECT'].includes(document.activeElement.tagName)&&document.activeElement.closest('.slipbox'))return;renderSlip()};
-function tick(force){lastU=Date.now();M.filter(m=>m.live).forEach(m=>Object.keys(P).filter(k=>k.startsWith(m.id+'|')).forEach(k=>{const o=P[k];P[k]=Math.max(1.05,o*(1+(Math.random()-.5)*(force?.14:.05)));const b=$$('[data-k="'+k+'"]');b.forEach(e=>{e.dataset.t=P[k]>o?'up':'dn';e.classList.add(P[k]>o?'up':'dn');setTimeout(()=>e.classList.remove('up','dn'),1500)})}));paint();safe()}
+function tick(force){lastU=Date.now();M.filter(m=>m.live).forEach(m=>Object.keys(P).filter(k=>k.startsWith(m.id+'|')).forEach(k=>{const o=P[k];P[k]=Math.max(1.05,o*(1+(Math.random()-.5)*(force?.14:.05))+((B[k]||o)-o)*.35);const b=$$('[data-k="'+k+'"]');b.forEach(e=>{e.dataset.t=P[k]>o?'up':'dn';e.classList.add(P[k]>o?'up':'dn');setTimeout(()=>e.classList.remove('up','dn'),1500)})}));paint();safe()}
 setInterval(tick,6000);
 setInterval(()=>{M.forEach(m=>{if(m.live&&m.min)m.min++});if(Math.random()<.5&&!L['ars-bri|Next goal']){const k='ars-bri|Next goal';S.has(k)?S.delete(k):S.add(k);if(route=='match'&&document.activeElement.tagName!='INPUT')render()}$$('.cd').forEach(e=>e.textContent=cd(M.find(x=>x.id==e.dataset.id)));paint();safe()},15000);
 setInterval(()=>$$('.ut').forEach(e=>e.textContent=ago()),1000);
